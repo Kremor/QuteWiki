@@ -1,6 +1,7 @@
 import codecs
 import os
 
+from PyQt5.Qt import Qt
 from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QCloseEvent
 from PyQt5.QtWidgets import QApplication
@@ -42,7 +43,7 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
             self.pagesView.insertItem(i, page)
 
         self.pagesView.itemClicked.connect(self.on_page_selected)
-        self.textEdit.link_clicked.connect(self.change_page)
+        self.textEdit.link_clicked.connect(self.on_link_clicked)
         self.textEdit.title_changed.connect(self.on_title_changed)
         self.textEdit.textChanged.connect(self.on_text_changed)
 
@@ -72,8 +73,33 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
     def add_tag(self):
         pass
 
-    def change_page(self, page: str):
-        print('page_changed', page)
+    def change_page(self, page):
+        # TODO Make better
+        item = self.pagesView.findItems(page, Qt.MatchExactly)[0]
+        title = self.textEdit.document().findBlockByNumber(0).text().strip()
+        if self.wiki.name_repeats(self.current_page.name, title):
+            self.pagesView.setCurrentRow(0)
+            self.show_message('The Page <b>{}</b> already exists.'
+                              'Change the title of the page before switching.'
+                              .format(title))
+        else:
+            if title != self.current_page.name:
+                self.wiki.rename_page(self.current_page.name, title)
+                self.pagesView.item(0).setText(title)
+            self.save()
+            row = self.pagesView.row(item)
+            item = self.pagesView.takeItem(row)
+            self.pagesView.insertItem(0, item)
+            page = item.text()
+            file = codecs.open(self.wiki_path + '/' + page + '.md', 'r', 'utf-8')
+            content = file.read()
+            file.close()
+            self.pagesView.setCurrentRow(0)
+            self.current_page = self.wiki.get_page(page)
+            self.set_text(content)
+            self.textEdit.setEnabled(True)
+            self.change_title(page)
+            self.allow_saving = False
 
     def change_title(self, page: str):
         self.setWindowTitle('QuteWiki - ' + page)
@@ -111,6 +137,15 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
 
     def open_wiki(self, path: str):
         pass
+
+    def on_link_clicked(self, page: str):
+        # TODO change WikiManager to not iterate over all the keys
+        # TODO add global change page function
+        pages = self.wiki.get_pages()
+        for wiki_page in pages:
+            if wiki_page.lower() == page.lower():
+                self.change_page(wiki_page)
+                break
 
     def on_page_selected(self, item: QListWidgetItem):
         title = self.textEdit.document().findBlockByNumber(0).text().strip()

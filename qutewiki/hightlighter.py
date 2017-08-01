@@ -76,6 +76,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         self.setCurrentBlockState(0)
 
     def set_pages(self, pages: list):
+        # TODO smarter indexing
         self.pages = []
         for page in pages:
             page = page.lower()
