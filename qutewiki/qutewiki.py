@@ -132,6 +132,7 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
             self.set_text(content)
             self.textEdit.setEnabled(True)
             self.change_title(page)
+            self.update_wiki()
 
     def on_text_changed(self):
         self.allow_saving = True
@@ -183,6 +184,8 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
 
     def update_wiki(self):
         pages = self.wiki.get_pages()
+        if self.current_page.name in pages:
+            pages.remove(self.current_page.name)
         self.highlighter.set_pages(pages)
 
     def wait_for_saving(self):
