@@ -45,20 +45,14 @@ class WikiManager:
             return self.pages[name]
         return None
 
-    def get_pages(self):
-        pages = []
-        for key in self.pages:
-            pages.append(key)
-        return pages
+    def get_pages(self) -> list:
+        return [key for key in self.pages]
 
     def get_tag(self, name):
         pass
 
-    def get_tags(self):
-        tags = []
-        for key in self.tags:
-            tags.append(key)
-        return tags
+    def get_tags(self) -> list:
+        return [key for key in self.tags]
 
     def is_page(self, name):
         return name in self.pages
@@ -66,7 +60,7 @@ class WikiManager:
     def is_tag(self, name):
         return name in self.tags
 
-    def name_repeats(self, current, new):
+    def name_repeats(self, current, new) -> bool:
         if current != new and self.is_page(new):
             return True
         return False
@@ -89,12 +83,12 @@ class WikiManager:
     def rename_tag(self):
         pass
 
-    def tag_repeats(self, current, new):
+    def tag_repeats(self, current, new) -> bool:
         if current != new and self.is_tag(new):
             return True
         return False
 
-    def to_json(self):
+    def to_json(self) -> dict:
         pages = {}
         for key in self.pages:
             pages[key] = self.pages[key].to_dict()

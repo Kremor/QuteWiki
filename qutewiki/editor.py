@@ -85,7 +85,7 @@ class Editor(QTextEdit):
                 self.blockSignals(False)
 
     @staticmethod
-    def is_list(text: str):
+    def is_list(text: str) -> bool:
         match = Editor.list_pattern.search(text)
         if match:
             return True
