@@ -1,6 +1,8 @@
 import re
 
 from PyQt5.Qt import Qt
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtGui import QMouseEvent
 from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QTextEdit
@@ -8,13 +10,17 @@ from PyQt5.QtWidgets import QTextEdit
 
 class Editor(QTextEdit):
 
+    title_changed = pyqtSignal(str)
+
     bullet_list = re.compile('[*] .*')
     list_pattern = re.compile('\d+[.] .*|[*] .*')
     numbered_list = re.compile('\d+[.] .*')
 
     def __init__(self, parent=None):
         super(Editor, self).__init__(parent)
+        self.cursorPositionChanged.connect(self.on_cursor_pos_changed)
         self.textChanged.connect(self.on_text_changed)
+        self.editing_title = False
 
     def mousePressEvent(self, event: QMouseEvent):
         super().mousePressEvent(event)
@@ -26,12 +32,21 @@ class Editor(QTextEdit):
             text_cursor.select(QTextCursor.WordUnderCursor)
             word = text_cursor.selectedText()
 
+    def on_cursor_pos_changed(self):
+        if self.textCursor().blockNumber() != 0 and self.editing_title:
+            title = self.document().findBlockByNumber(0).text().strip()
+            self.title_changed.emit(title)
+            self.editing_title = False
+
     def on_text_changed(self):
         if self.document().isModified():
             cursor = self.textCursor()
             block = cursor.block()
             pos = block.blockNumber()
             text = block.text()
+
+            if pos == 0:
+                self.editing_title = True
 
             if Editor.is_list(text):
                 match = Editor.list_pattern.search(text)

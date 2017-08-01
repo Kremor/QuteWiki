@@ -6,5 +6,6 @@ setup(
     description='A simple personal wiki client',
     author='Kremor Pärt',
     author_email='kremor.part@gmail.com',
-    packages=['qutewiki']
+    packages=['qutewiki'],
+    install_require=['PyQt5']
 )

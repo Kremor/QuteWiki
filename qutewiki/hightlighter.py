@@ -11,6 +11,9 @@ class SyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None):
         super(SyntaxHighlighter, self).__init__(parent)
 
+        self.title_rule = QTextCharFormat()
+        self.title_rule.setFontPointSize(22)
+
         self.rules = []
 
         heading1_rule = QTextCharFormat()
@@ -33,13 +36,16 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         heading5_rule.setFontPointSize(14)
         self.rules.append((re.compile('##### .*'), heading5_rule))
 
-        page_rule = QTextCharFormat()
-        page_rule.setForeground(QBrush(QColor(0, 50, 200)))
-        page_rule.setFontUnderline(True)
+        self.page_rule = QTextCharFormat()
+        self.page_rule.setForeground(QBrush(QColor(0, 50, 200)))
+        self.page_rule.setFontUnderline(True)
 
         self.pages = []
 
     def highlightBlock(self, text: str):
+        if self.currentBlock().blockNumber() == 0:
+            self.setFormat(0, self.currentBlock().length(), self.title_rule)
+
         text = text.lower()
 
         for pattern, char_format in self.rules:
@@ -54,6 +60,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
             for match in matches:
                 start = match.start()
                 end = match.end()
+                print(start, end)
 
                 if start > 0:
                     if match.string[start - 1].isalnum():
@@ -65,3 +72,9 @@ class SyntaxHighlighter(QSyntaxHighlighter):
                 self.setFormat(start, end - start, char_format)
 
         self.setCurrentBlockState(0)
+
+    def set_pages(self, pages: list):
+        self.pages = []
+        for page in pages:
+            page = page.lower()
+            self.pages.append((re.compile(page), self.page_rule))
