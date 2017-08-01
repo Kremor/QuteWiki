@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import QTextEdit
 
 class Editor(QTextEdit):
 
+    link_clicked = pyqtSignal(str)
     title_changed = pyqtSignal(str)
 
     bullet_list = re.compile('[*] .*')
@@ -18,14 +19,18 @@ class Editor(QTextEdit):
 
     def __init__(self, parent=None):
         super(Editor, self).__init__(parent)
+        self.setTabStopWidth(30)
         self.cursorPositionChanged.connect(self.on_cursor_pos_changed)
         self.textChanged.connect(self.on_text_changed)
         self.editing_title = False
 
+    def mouseMoveEvent(self, event: QMouseEvent):
+        super().mouseMoveEvent(event)
+
+        cursor = self.cursorForPosition(event.pos())
+
     def mousePressEvent(self, event: QMouseEvent):
         super().mousePressEvent(event)
-        self.setFontPointSize(12)
-        self.setTabStopWidth(30)
 
         if event.button() == Qt.LeftButton:
             text_cursor = self.cursorForPosition(event.pos())
@@ -78,7 +83,6 @@ class Editor(QTextEdit):
                 edit_cursor.endEditBlock()
 
                 self.blockSignals(False)
-
 
     @staticmethod
     def is_list(text: str):

@@ -23,7 +23,6 @@ class WikiManager:
         file.close()
 
         wiki_dict = json.loads(data)
-        print(wiki_dict)
 
         pages = wiki_dict['pages']
 

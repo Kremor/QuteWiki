@@ -31,7 +31,7 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
         self.wiki_path = ''
         self.wiki_file = ''
         self.wiki = None
-        self.current_page = None
+        self.current_page = WikiPage()
         self.init_folder()
 
         self.setupUi(self)
@@ -40,14 +40,16 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
         pages = self.wiki.get_pages()
         for i, page in enumerate(pages):
             self.pagesView.insertItem(i, page)
-        self.pagesView.itemClicked.connect(self.page_selected)
+        self.pagesView.itemClicked.connect(self.on_page_selected)
 
-        self.textEdit.title_changed.connect(self.check_title)
+        self.textEdit.title_changed.connect(self.on_title_changed)
+        self.textEdit.textChanged.connect(self.on_text_changed)
 
         self.timer = QTimer(self)
-        self.timer.setInterval(10000)
+        self.timer.setInterval(30000)
         self.timer.setSingleShot(False)
         self.timer.timeout.connect(self.save)
+        self.timer.start()
 
         self.addPageButton.pressed.connect(self.add_page)
 
@@ -60,41 +62,17 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
         title = self.get_title()
         if not self.textEdit.isEnabled():
             self.textEdit.setEnabled(True)
-            self.allow_saving = True
-            self.timer.start()
-        self.textEdit.setText(title + '\n\nDescribe your new note here')
+        self.set_text(title + '\n\nDescribe your new note here')
         self.pagesView.insertItem(0, title)
         self.pagesView.setCurrentRow(0)
         self.current_page = self.wiki.add_page(title)
+        self.change_title(title)
 
     def add_tag(self):
         pass
 
-    def init_folder(self, path: str = '~'):
-        self.wiki_path = os.path.expanduser(path) + '/.qutewiki'
-        self.wiki_file = self.wiki_path + '/wiki.json'
-
-        if not os.path.isdir(self.wiki_path):
-            os.makedirs(self.wiki_path)
-
-        if not os.path.isfile(self.wiki_file):
-            file = codecs.open(self.wiki_file, 'w', 'utf-8')
-            file.write('{ "pages": {}, "tags" : [] }')
-            file.close()
-
-        self.wiki = WikiManager(self.wiki_file)
-
-    def check_title(self, title):
-        if self.wiki.name_repeats(self.current_page.name, title):
-            dialog = QMessageBox(text='The title {} already exists, choose another one'.format(
-                title), parent=self)
-            dialog.setStandardButtons(QMessageBox.Ok)
-            dialog.show()
-        else:
-            self.wiki.rename_page(self.current_page.name, title)
-            list_item = self.pagesView.currentItem()
-            list_item.setText(title)
-            self.update_wiki()
+    def change_title(self, page: str):
+        self.setWindowTitle('QuteWiki - ' + page)
 
     def closeEvent(self, event: QCloseEvent):
         self.timer.stop()
@@ -113,22 +91,73 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
             i += 1
         return title + ' ' + str(i)
 
+    def init_folder(self, path: str = '~'):
+        self.wiki_path = os.path.expanduser(path) + '/.qutewiki'
+        self.wiki_file = self.wiki_path + '/wiki.json'
+
+        if not os.path.isdir(self.wiki_path):
+            os.makedirs(self.wiki_path)
+
+        if not os.path.isfile(self.wiki_file):
+            file = codecs.open(self.wiki_file, 'w', 'utf-8')
+            file.write('{ "pages": {}, "tags" : [] }')
+            file.close()
+
+        self.wiki = WikiManager(self.wiki_file)
+
     def open_wiki(self, path: str):
         pass
 
-    def page_selected(self, item: QListWidgetItem):
-        self.save()
-        page = item.text()
-        file = codecs.open(self.wiki_path + '/' + page + '.md', 'r', 'utf-8')
-        content = file.read()
-        file.close()
-        self.current_page = self.wiki.get_page(page)
-        self.textEdit.setText(content)
-        self.textEdit.setEnabled(True)
+    def on_page_selected(self, item: QListWidgetItem):
+        title = self.textEdit.document().findBlockByNumber(0).text().strip()
+        if self.wiki.name_repeats(self.current_page.name, title):
+            self.pagesView.setCurrentRow(0)
+            self.show_message('The Page <b>{}</b> already exists.'
+                              'Change the title of the page before switching.'
+                              .format(title))
+        else:
+            if title != self.current_page.name:
+                self.wiki.rename_page(self.current_page.name, title)
+                self.pagesView.item(0).setText(title)
+            self.save()
+            row = self.pagesView.row(item)
+            item = self.pagesView.takeItem(row)
+            self.pagesView.insertItem(0, item)
+            page = item.text()
+            file = codecs.open(self.wiki_path + '/' + page + '.md', 'r', 'utf-8')
+            content = file.read()
+            file.close()
+            self.pagesView.setCurrentRow(0)
+            self.current_page = self.wiki.get_page(page)
+            self.set_text(content)
+            self.textEdit.setEnabled(True)
+            self.change_title(page)
+
+    def on_text_changed(self):
+        self.allow_saving = True
+
+    def on_title_changed(self, title):
+        if self.wiki.name_repeats(self.current_page.name, title):
+            self.show_message('The Page <b>{}</b> already exists.'
+                              'Change the title of the page to another one.'
+                              .format(title))
+        else:
+            self.wiki.rename_page(self.current_page.name, title)
+            list_item = self.pagesView.currentItem()
+            list_item.setText(title)
+            self.update_wiki()
+            self.change_title(title)
 
     def save(self):
-        return
-        if self.allow_saving:
+        if self.allow_saving and self.current_page.name != '':
+            title = self.textEdit.document().findBlockByNumber(0).text().strip()
+            if self.wiki.name_repeats(self.current_page.name, title):
+                return
+
+            if title != self.current_page.name:
+                self.wiki.rename_page(self.current_page.name, title)
+                self.pagesView.item(0).setText(title)
+
             self.wait_for_saving()
 
             contents = self.textEdit.toPlainText() + '\n'
@@ -138,7 +167,19 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
             wiki_data = self.wiki.to_json()
             self.wiki_thread = FileSaver(self.wiki_file, wiki_data)
 
-            print('saved')
+            self.allow_saving = False
+
+    def set_text(self, text: str):
+        self.textEdit.blockSignals(True)
+        self.textEdit.setText(text)
+        self.textEdit.blockSignals(False)
+
+    def show_message(self, msg: str):
+        msgbox = QMessageBox(self)
+        msgbox.setWindowTitle('QuteWiki')
+        msgbox.setText(msg)
+        msgbox.setStandardButtons(QMessageBox.Ok)
+        msgbox.show()
 
     def update_wiki(self):
         pages = self.wiki.get_pages()
