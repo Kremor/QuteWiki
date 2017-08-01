@@ -2,9 +2,9 @@ import re
 
 from PyQt5.Qt import Qt
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtGui import QMouseEvent
 from PyQt5.QtGui import QTextCursor
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QTextEdit
 
 
@@ -19,23 +19,38 @@ class Editor(QTextEdit):
 
     def __init__(self, parent=None):
         super(Editor, self).__init__(parent)
+        self.setMouseTracking(True)
         self.setTabStopWidth(30)
         self.cursorPositionChanged.connect(self.on_cursor_pos_changed)
         self.textChanged.connect(self.on_text_changed)
         self.editing_title = False
 
+    def blockSignals(self, b: bool):
+        super().blockSignals(b)
+        self.document().blockSignals(b)
+
     def mouseMoveEvent(self, event: QMouseEvent):
         super().mouseMoveEvent(event)
 
         cursor = self.cursorForPosition(event.pos())
+        pos = cursor.positionInBlock()
+        for frmt in cursor.block().layout().formats():
+            if frmt.start <= pos <= frmt.start + frmt.length and frmt.format.isAnchor():
+                QApplication.setOverrideCursor(Qt.PointingHandCursor)
+            else:
+                QApplication.restoreOverrideCursor()
 
     def mousePressEvent(self, event: QMouseEvent):
         super().mousePressEvent(event)
 
         if event.button() == Qt.LeftButton:
-            text_cursor = self.cursorForPosition(event.pos())
-            text_cursor.select(QTextCursor.WordUnderCursor)
-            word = text_cursor.selectedText()
+            cursor = self.cursorForPosition(event.pos())
+            pos = cursor.positionInBlock()
+            cursor.select(QTextCursor.WordUnderCursor)
+            for frmt in cursor.block().layout().formats():
+                if frmt.start <= pos <= frmt.start + frmt.length:
+                    link = cursor.block().text()[frmt.start:frmt.start+frmt.length]
+                    self.link_clicked.emit(link)
 
     def on_cursor_pos_changed(self):
         if self.textCursor().blockNumber() != 0 and self.editing_title:

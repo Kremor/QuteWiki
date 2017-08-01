@@ -40,8 +40,9 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
         pages = self.wiki.get_pages()
         for i, page in enumerate(pages):
             self.pagesView.insertItem(i, page)
-        self.pagesView.itemClicked.connect(self.on_page_selected)
 
+        self.pagesView.itemClicked.connect(self.on_page_selected)
+        self.textEdit.link_clicked.connect(self.change_page)
         self.textEdit.title_changed.connect(self.on_title_changed)
         self.textEdit.textChanged.connect(self.on_text_changed)
 
@@ -70,6 +71,9 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
 
     def add_tag(self):
         pass
+
+    def change_page(self, page: str):
+        print('page_changed', page)
 
     def change_title(self, page: str):
         self.setWindowTitle('QuteWiki - ' + page)
@@ -132,7 +136,7 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
             self.set_text(content)
             self.textEdit.setEnabled(True)
             self.change_title(page)
-            self.update_wiki()
+            self.allow_saving = False
 
     def on_text_changed(self):
         self.allow_saving = True
@@ -173,7 +177,11 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
     def set_text(self, text: str):
         self.textEdit.blockSignals(True)
         self.textEdit.setText(text)
+        self.textEdit.links = []
+        self.textEdit.links_que = []
         self.textEdit.blockSignals(False)
+        self.update_wiki()
+        self.highlighter.rehighlight()
 
     def show_message(self, msg: str):
         msgbox = QMessageBox(self)

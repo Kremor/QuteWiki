@@ -39,6 +39,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         self.page_rule = QTextCharFormat()
         self.page_rule.setForeground(QBrush(QColor(0, 50, 200)))
         self.page_rule.setFontUnderline(True)
+        self.page_rule.setAnchor(True)
 
         self.pages = []
 
@@ -62,7 +63,6 @@ class SyntaxHighlighter(QSyntaxHighlighter):
             for match in matches:
                 start = match.start()
                 end = match.end()
-                print(start, end)
 
                 if start > 0:
                     if match.string[start - 1].isalnum():
