@@ -9,9 +9,13 @@ from qutewiki.wikitag import WikiTag
 
 class WikiManager:
 
-    def __init__(self, path: str):
+    def __init__(self):
         self.pages = {}
         self.tags = {}
+        self.path = ''
+        self.dir = ''
+
+    def setup(self, path: str):
         self.path = path
         self.dir = path.replace('wiki.json', '')
 

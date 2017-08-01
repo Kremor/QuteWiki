@@ -30,7 +30,7 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
 
         self.wiki_path = ''
         self.wiki_file = ''
-        self.wiki = None
+        self.wiki = WikiManager()
         self.current_page = WikiPage()
         self.init_folder()
 
@@ -103,7 +103,7 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
             file.write('{ "pages": {}, "tags" : [] }')
             file.close()
 
-        self.wiki = WikiManager(self.wiki_file)
+        self.wiki.setup(self.wiki_file)
 
     def open_wiki(self, path: str):
         pass
