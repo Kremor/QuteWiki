@@ -45,6 +45,8 @@ class SyntaxHighlighter(QSyntaxHighlighter):
     def highlightBlock(self, text: str):
         if self.currentBlock().blockNumber() == 0:
             self.setFormat(0, self.currentBlock().length(), self.title_rule)
+            self.setCurrentBlockState(0)
+            return
 
         text = text.lower()
 

@@ -15,7 +15,7 @@ from qutewiki.wikipage import  WikiPage
 from qutewiki.ui.qutewiki_ui import Ui_MainWindow
 
 
-class QuteWiki(QMainWindow):
+class QuteWiki(QMainWindow, Ui_MainWindow):
 
     def __init__(self):
         import sys
@@ -34,23 +34,22 @@ class QuteWiki(QMainWindow):
         self.current_page = None
         self.init_folder()
 
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
-        self.highlighter = SyntaxHighlighter(self.ui.textEdit)
+        self.setupUi(self)
+        self.highlighter = SyntaxHighlighter(self.textEdit)
 
         pages = self.wiki.get_pages()
         for i, page in enumerate(pages):
-            self.ui.pagesView.insertItem(i, page)
-        self.ui.pagesView.itemClicked.connect(self.page_selected)
+            self.pagesView.insertItem(i, page)
+        self.pagesView.itemClicked.connect(self.page_selected)
 
-        self.ui.textEdit.title_changed.connect(self.check_title)
+        self.textEdit.title_changed.connect(self.check_title)
 
         self.timer = QTimer(self)
         self.timer.setInterval(10000)
         self.timer.setSingleShot(False)
         self.timer.timeout.connect(self.save)
 
-        self.ui.addPageButton.pressed.connect(self.add_page)
+        self.addPageButton.pressed.connect(self.add_page)
 
         self.update_wiki()
 
@@ -59,12 +58,13 @@ class QuteWiki(QMainWindow):
 
     def add_page(self):
         title = self.get_title()
-        if not self.ui.textEdit.isEnabled():
-            self.ui.textEdit.setEnabled(True)
+        if not self.textEdit.isEnabled():
+            self.textEdit.setEnabled(True)
             self.allow_saving = True
             self.timer.start()
-        self.ui.textEdit.setText(title + '\n\nDescribe your new note here')
-        self.ui.pagesView.insertItem(0, title)
+        self.textEdit.setText(title + '\n\nDescribe your new note here')
+        self.pagesView.insertItem(0, title)
+        self.pagesView.setCurrentRow(0)
         self.current_page = self.wiki.add_page(title)
 
     def add_tag(self):
@@ -87,10 +87,14 @@ class QuteWiki(QMainWindow):
     def check_title(self, title):
         if self.wiki.name_repeats(self.current_page.name, title):
             dialog = QMessageBox(text='The title {} already exists, choose another one'.format(
-                title), buttons=QMessageBox.Ok, parent=self)
+                title), parent=self)
+            dialog.setStandardButtons(QMessageBox.Ok)
             dialog.show()
         else:
             self.wiki.rename_page(self.current_page.name, title)
+            list_item = self.pagesView.currentItem()
+            list_item.setText(title)
+            self.update_wiki()
 
     def closeEvent(self, event: QCloseEvent):
         self.timer.stop()
@@ -114,21 +118,20 @@ class QuteWiki(QMainWindow):
 
     def page_selected(self, item: QListWidgetItem):
         self.save()
-        self.wait_for_saving()
         page = item.text()
         file = codecs.open(self.wiki_path + '/' + page + '.md', 'r', 'utf-8')
         content = file.read()
         file.close()
         self.current_page = self.wiki.get_page(page)
-        self.ui.textEdit.setText(content)
-        self.ui.textEdit.setEnabled(True)
+        self.textEdit.setText(content)
+        self.textEdit.setEnabled(True)
 
     def save(self):
         return
         if self.allow_saving:
             self.wait_for_saving()
 
-            contents = self.ui.textEdit.toPlainText() + '\n'
+            contents = self.textEdit.toPlainText() + '\n'
             path = '{}/{}.md'.format(self.wiki_path, self.current_page.name)
             self.file_thread = FileSaver(path, contents)
 
