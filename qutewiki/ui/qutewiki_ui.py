@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 700)
+        MainWindow.resize(1000, 701)
         font = QtGui.QFont()
         font.setPointSize(10)
         MainWindow.setFont(font)
@@ -22,26 +22,33 @@ class Ui_MainWindow(object):
         self.splitter = QtWidgets.QSplitter(self.centralwidget)
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setObjectName("splitter")
-        self.tagView = QtWidgets.QTreeView(self.splitter)
-        self.tagView.setMaximumSize(QtCore.QSize(100, 16777215))
-        self.tagView.setObjectName("tagView")
         self.widget = QtWidgets.QWidget(self.splitter)
-        self.widget.setMaximumSize(QtCore.QSize(200, 16777215))
+        self.widget.setMaximumSize(QtCore.QSize(300, 16777215))
         self.widget.setObjectName("widget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.widget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.lineEdit = QtWidgets.QLineEdit(self.widget)
         self.lineEdit.setMaximumSize(QtCore.QSize(300, 16777215))
         self.lineEdit.setObjectName("lineEdit")
-        self.verticalLayout.addWidget(self.lineEdit)
+        self.horizontalLayout_2.addWidget(self.lineEdit)
         self.addPageButton = QtWidgets.QPushButton(self.widget)
         self.addPageButton.setObjectName("addPageButton")
-        self.verticalLayout.addWidget(self.addPageButton)
-        self.pagesView = QtWidgets.QListWidget(self.widget)
+        self.horizontalLayout_2.addWidget(self.addPageButton)
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.tagView = QtWidgets.QTreeView(self.widget)
+        self.tagView.setMaximumSize(QtCore.QSize(100, 16777215))
+        self.tagView.setObjectName("tagView")
+        self.horizontalLayout_3.addWidget(self.tagView)
+        self.pagesView = ListWidget(self.widget)
         self.pagesView.setMaximumSize(QtCore.QSize(300, 16777215))
         self.pagesView.setObjectName("pagesView")
-        self.verticalLayout.addWidget(self.pagesView)
+        self.horizontalLayout_3.addWidget(self.pagesView)
+        self.verticalLayout.addLayout(self.horizontalLayout_3)
         self.widget_2 = QtWidgets.QWidget(self.splitter)
         self.widget_2.setObjectName("widget_2")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.widget_2)
@@ -53,6 +60,12 @@ class Ui_MainWindow(object):
         font.setPointSize(11)
         font.setStyleStrategy(QtGui.QFont.PreferAntialias)
         self.textEdit.setFont(font)
+        self.textEdit.setStyleSheet("background: #FFF;\n"
+"padding-top: 30px;\n"
+"padding-left: 50px;\n"
+"padding-right: 50px;\n"
+"padding-bottom: 20px;\n"
+"")
         self.textEdit.setObjectName("textEdit")
         self.horizontalLayout.addWidget(self.textEdit)
         self.widget_3 = QtWidgets.QWidget(self.widget_2)
@@ -73,7 +86,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.addWidget(self.splitter)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 24))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1000, 24))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -91,3 +104,4 @@ class Ui_MainWindow(object):
         self.showTagsButton.setText(_translate("MainWindow", "T"))
 
 from qutewiki.editor import Editor
+from qutewiki.listwidget import ListWidget

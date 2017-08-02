@@ -69,8 +69,13 @@ class WikiManager:
             return True
         return False
 
-    def remove_page(self):
-        pass
+    def remove_page(self, page):
+        if page in self.pages:
+            del self.pages[page]
+            path = '{}/{}.md'.format(self.dir, page)
+            if os.path.isfile(path):
+                os.remove(path)
+            print(self.pages)
 
     def remove_tag(self):
         pass

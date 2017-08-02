@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>700</height>
+    <width>1000</width>
+    <height>701</height>
    </rect>
   </property>
   <property name="font">
@@ -25,48 +25,64 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QTreeView" name="tagView">
-       <property name="maximumSize">
-        <size>
-         <width>100</width>
-         <height>16777215</height>
-        </size>
-       </property>
-      </widget>
       <widget class="QWidget" name="widget" native="true">
        <property name="maximumSize">
         <size>
-         <width>200</width>
+         <width>300</width>
          <height>16777215</height>
         </size>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QLineEdit" name="lineEdit">
-          <property name="maximumSize">
-           <size>
-            <width>300</width>
-            <height>16777215</height>
-           </size>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QLineEdit" name="searchPage">
+            <property name="maximumSize">
+             <size>
+              <width>300</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Search Notes</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="addPageButton">
+            <property name="text">
+             <string>New Note</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
-         <widget class="QPushButton" name="addPageButton">
-          <property name="text">
-           <string>New Note</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QListWidget" name="pagesView">
-          <property name="maximumSize">
-           <size>
-            <width>300</width>
-            <height>16777215</height>
-           </size>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QTreeView" name="tagView">
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="ListWidget" name="pagesView">
+            <property name="maximumSize">
+             <size>
+              <width>300</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -82,6 +98,14 @@
             <pointsize>11</pointsize>
             <stylestrategy>PreferAntialias</stylestrategy>
            </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background: #FFF;
+padding-top: 30px;
+padding-left: 50px;
+padding-right: 50px;
+padding-bottom: 20px;
+</string>
           </property>
          </widget>
         </item>
@@ -135,7 +159,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1000</width>
      <height>24</height>
     </rect>
    </property>
@@ -147,6 +171,11 @@
    <class>Editor</class>
    <extends>QTextEdit</extends>
    <header>qutewiki/editor</header>
+  </customwidget>
+  <customwidget>
+   <class>ListWidget</class>
+   <extends>QListWidget</extends>
+   <header>qutewiki/listwidget</header>
   </customwidget>
  </customwidgets>
  <resources/>

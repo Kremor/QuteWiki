@@ -43,6 +43,7 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
             self.pagesView.insertItem(i, page)
 
         self.pagesView.itemClicked.connect(self.on_page_selected)
+        self.pagesView.remove_item_signal.connect(self.remove_page)
         self.textEdit.link_clicked.connect(self.on_link_clicked)
         self.textEdit.title_changed.connect(self.on_title_changed)
         self.textEdit.textChanged.connect(self.on_text_changed)
@@ -57,7 +58,7 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
 
         self.update_wiki()
 
-        self.show()
+        self.showMaximized()
         sys.exit(qt_app.exec_())
 
     def add_page(self):
@@ -114,6 +115,12 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
             self.wiki_thread.wait()
         super().closeEvent(event)
 
+    def close_page(self):
+        self.save()
+        self.wait_for_saving()
+        self.textEdit.setDisabled(True)
+        self.textEdit.setText('')
+
     def get_title(self):
         title = 'New Page'
         i = 1
@@ -149,6 +156,8 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
 
     def on_page_selected(self, item: QListWidgetItem):
         title = self.textEdit.document().findBlockByNumber(0).text().strip()
+        if self.current_page.name == title:
+            return
         if self.wiki.name_repeats(self.current_page.name, title):
             self.pagesView.setCurrentRow(0)
             self.show_message('The Page <b>{}</b> already exists.'
@@ -209,6 +218,23 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
 
             self.allow_saving = False
 
+    def remove_page(self, page):
+        if self.show_remove_page_dialog(
+            'Are you sure to remove <b>{}</b>?'.format(page),
+            'Remove {}'.format(page)
+        ):
+            if page == self.current_page.name:
+                self.close_page()
+            item = self.pagesView.findItems(page, Qt.MatchExactly | Qt.MatchCaseSensitive)[0]
+            row = self.pagesView.row(item)
+            self.pagesView.takeItem(row)
+            self.wiki.remove_page(page)
+            self.allow_saving = True
+
+
+    def remove_tag(self):
+        pass
+
     def set_text(self, text: str):
         self.textEdit.blockSignals(True)
         self.textEdit.setText(text)
@@ -217,6 +243,16 @@ class QuteWiki(QMainWindow, Ui_MainWindow):
         self.textEdit.blockSignals(False)
         self.update_wiki()
         self.highlighter.rehighlight()
+
+    def show_remove_page_dialog(self, msg: str, title: str):
+        msgbox = QMessageBox()
+        msgbox.setWindowTitle(title)
+        msgbox.setText(msg)
+        msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+        result = msgbox.exec_()
+        if result == QMessageBox.Yes:
+            return True
+        return False
 
     def show_message(self, msg: str):
         msgbox = QMessageBox(self)
